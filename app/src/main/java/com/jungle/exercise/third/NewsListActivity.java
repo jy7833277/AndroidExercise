@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -43,9 +44,12 @@ public class NewsListActivity extends AppCompatActivity {
     @BindView(R.id.lv_news_list)
     ListView listView;
     BaseAdapter mAdapter;
+    View mLoadMoreView;
 
     private Context mContext;
     private List<Map<String, Object>> dataList;
+    private int mCurrent = 0;
+    private int mPageSize = 10;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +72,11 @@ public class NewsListActivity extends AppCompatActivity {
     public void initView() {
         mAdapter = new NewsListAdapter(mContext, dataList);
         listView.setAdapter(mAdapter);
+        LayoutInflater layoutInflater =
+                (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View footerView =  layoutInflater.inflate(R.layout.footer_news_list, null);
+        mLoadMoreView = footerView.findViewById(R.id.tv_news_load_more);
+        listView.addFooterView(footerView);
     }
     public void initData() {
         final BaseAdapter adapter = mAdapter;
@@ -75,12 +84,13 @@ public class NewsListActivity extends AppCompatActivity {
         SwipeRefreshLayout.OnRefreshListener listener = new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                mCurrent = 0;
                 dataList.clear();
                 final Observable<Map<String, Object>> observable = Observable.create(new Observable.OnSubscribe<Map<String, Object>>() {
 
                     @Override
                     public void call(Subscriber<? super Map<String, Object>> subscriber) {
-                        List<Map<String, Object>> list = fetchNewsData(0, 10);
+                        List<Map<String, Object>> list = fetchNewsData(mCurrent, mPageSize);
                         for(Map<String, Object> item : list) {
                             subscriber.onNext(item);
                         }
@@ -110,6 +120,42 @@ public class NewsListActivity extends AppCompatActivity {
         };
         swipeRefreshLayout.setOnRefreshListener(listener);
         listener.onRefresh();
+
+        mLoadMoreView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCurrent = (mCurrent + 1) * mPageSize;
+                final Observable<Map<String, Object>> observable = Observable.create(new Observable.OnSubscribe<Map<String, Object>>() {
+
+                    @Override
+                    public void call(Subscriber<? super Map<String, Object>> subscriber) {
+                        List<Map<String, Object>> list = fetchNewsData(mCurrent, mPageSize);
+                        for (Map<String, Object> item : list) {
+                            subscriber.onNext(item);
+                        }
+                        subscriber.onCompleted();
+                    }
+                }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread());
+
+                observable.subscribe(new Subscriber<Map<String, Object>>() {
+                    @Override
+                    public void onCompleted() {
+                        adapter.notifyDataSetChanged();
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(mContext, "获取今日头条新闻错误", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onNext(Map<String, Object> m) {
+                        dataList.add(m);
+                    }
+                });
+            }
+        });
     }
 
     private List<Map<String, Object>> fetchNewsData(int offset, int count) {
