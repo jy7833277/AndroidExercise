@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -43,6 +42,7 @@ public class NewsListActivity extends AppCompatActivity {
     SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.lv_news_list)
     ListView listView;
+    BaseAdapter mAdapter;
 
     private Context mContext;
     private List<Map<String, Object>> dataList;
@@ -55,43 +55,61 @@ public class NewsListActivity extends AppCompatActivity {
         mContext = this;
         dataList = new ArrayList<>();
 
+        initView();
         initData();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initData();
+    }
+
+    public void initView() {
+        mAdapter = new NewsListAdapter(mContext, dataList);
+        listView.setAdapter(mAdapter);
+    }
     public void initData() {
-
-        final BaseAdapter adapter = new NewsListAdapter(mContext, dataList);
-        listView.setAdapter(adapter);
-
-        Observable<Map<String, Object>> observable = Observable.create(new Observable.OnSubscribe<Map<String, Object>>() {
-
+        final BaseAdapter adapter = mAdapter;
+//        swipeRefreshLayout.setColorSchemeColors(R.color.red, R.color.yellow, R.color.green);
+        SwipeRefreshLayout.OnRefreshListener listener = new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void call(Subscriber<? super Map<String, Object>> subscriber) {
-                List<Map<String, Object>> list = fetchNewsData(0, 10);
-                for(Map<String, Object> item : list) {
-                    subscriber.onNext(item);
-                }
-                subscriber.onCompleted();
-            }
-        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread());
+            public void onRefresh() {
+                dataList.clear();
+                final Observable<Map<String, Object>> observable = Observable.create(new Observable.OnSubscribe<Map<String, Object>>() {
 
-        observable.subscribe(new Subscriber<Map<String, Object>>() {
-            @Override
-            public void onCompleted() {
-                adapter.notifyDataSetChanged();
-            }
+                    @Override
+                    public void call(Subscriber<? super Map<String, Object>> subscriber) {
+                        List<Map<String, Object>> list = fetchNewsData(0, 10);
+                        for(Map<String, Object> item : list) {
+                            subscriber.onNext(item);
+                        }
+                        subscriber.onCompleted();
+                    }
+                }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread());
 
-            @Override
-            public void onError(Throwable e) {
-                Toast.makeText(mContext, "获取今日头条新闻错误", Toast.LENGTH_LONG).show();
-            }
+                observable.subscribe(new Subscriber<Map<String, Object>>() {
+                    @Override
+                    public void onCompleted() {
+                        adapter.notifyDataSetChanged();
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
 
-            @Override
-            public void onNext(Map<String, Object> m) {
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(mContext, "获取今日头条新闻错误", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onNext(Map<String, Object> m) {
 //                dataList.clear();
-                dataList.add(m);
+                        dataList.add(m);
+                    }
+                });
             }
-        });
+        };
+        swipeRefreshLayout.setOnRefreshListener(listener);
+        listener.onRefresh();
     }
 
     private List<Map<String, Object>> fetchNewsData(int offset, int count) {
