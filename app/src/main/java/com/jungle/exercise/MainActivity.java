@@ -2,7 +2,6 @@ package com.jungle.exercise;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -11,15 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.Toast;
-
-import com.jungle.exercise.third.NewsListActivity;
-
-import java.util.List;
-
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,8 +22,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mContext = this;
-
-        ButterKnife.bind(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        toolbar.setTitle("标题");
@@ -95,11 +84,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @OnClick(R.id.btn_news)
-    public void onBtnNewsClick() {
-        Intent intent = new Intent(this, NewsListActivity.class);
-        startActivity(intent);
     }
 }

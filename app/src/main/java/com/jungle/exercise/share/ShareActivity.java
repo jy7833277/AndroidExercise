@@ -11,6 +11,9 @@ import com.jungle.exercise.R;
 
 import java.util.List;
 
+/**
+ * @author Jungle
+ */
 public class ShareActivity extends AppCompatActivity {
     private Context mContext;
     @Override

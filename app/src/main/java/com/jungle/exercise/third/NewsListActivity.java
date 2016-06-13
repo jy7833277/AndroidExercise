@@ -34,6 +34,9 @@ import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
+/**
+ * @author Jungle
+ */
 public class NewsListActivity extends AppCompatActivity {
 
     @BindView(R.id.swipe_container)

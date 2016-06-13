@@ -13,8 +13,11 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import java.util.List;
 import java.util.Map;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
- * Created by Administrator on 2016/6/12.
+ * Created by Jungle on 2016/6/12.
  */
 public class NewsListAdapter extends BaseAdapter {
     private Context mContext;
@@ -43,10 +46,8 @@ public class NewsListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder;
         if(null == convertView) {
-            viewHolder = new ViewHolder();
             convertView = View.inflate(mContext, R.layout.item_news_list, null);
-            viewHolder.imageView = (ImageView) convertView.findViewById(R.id.iv_news_image);
-            viewHolder.textView = (TextView) convertView.findViewById(R.id.tv_news_title);
+            viewHolder = new ViewHolder(convertView);
             convertView.setTag(viewHolder);
         }
         else {
@@ -61,7 +62,12 @@ public class NewsListAdapter extends BaseAdapter {
     }
 
     class ViewHolder {
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
+        @BindView(R.id.iv_news_image)
         ImageView imageView;
+        @BindView(R.id.tv_news_title)
         TextView textView;
     }
 }

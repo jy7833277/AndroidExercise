@@ -9,6 +9,9 @@ import android.webkit.WebViewClient;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * @author Jungle
+ */
 public class WebViewActivity extends AppCompatActivity {
 
     @BindView(R.id.wv_webview)

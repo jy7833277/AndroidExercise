@@ -7,7 +7,7 @@ import retrofit2.http.GET;
 import retrofit2.http.QueryMap;
 
 /**
- * Created by Administrator on 2016/6/12.
+ * Created by Jungle on 2016/6/12.
  */
 public interface ToutiaoNewsService {
     @GET("/api/article/real_time_news/?utm_source=toutiao")

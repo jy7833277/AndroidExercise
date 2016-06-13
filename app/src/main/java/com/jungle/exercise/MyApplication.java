@@ -17,7 +17,7 @@ import com.nostra13.universalimageloader.utils.StorageUtils;
 import java.io.File;
 
 /**
- * Created by Administrator on 2016/6/12.
+ * Created by Jungle on 2016/6/12.
  */
 public class MyApplication extends Application {
     private Context mContext;
